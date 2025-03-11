@@ -3,12 +3,11 @@ import java.util.Scanner;
 
 public class ExpressionConverter {
 
-    // Method to check if a character is an operator
     public static boolean isOperator(char c) {
-        return c == '+' || c == '-' || c == '*' || c == '/' || c == '^' || c == '%';
+        return c == '+' || c == '-' || c == '*' || c == '/' || c == '^' || c == '%' ||
+               c == '&' || c == '|' || c == '!' || c == '='; 
     }
 
-    // Method to get the precedence of operators
     public static int precedence(char c) {
         if (c == '+' || c == '-') {
             return 1;
@@ -16,11 +15,14 @@ public class ExpressionConverter {
             return 2;
         } else if (c == '^') {
             return 3;
+        } else if (c == '&' || c == '|') {
+            return 4; 
+        } else if (c == '=' || c == '!') {
+            return 5; 
         }
         return -1;
     }
 
-    // Infix to Postfix conversion
     public static String infixToPostfix(String infix) {
         Stack<Character> stack = new Stack<>();
         StringBuilder postfix = new StringBuilder();
@@ -28,23 +30,16 @@ public class ExpressionConverter {
         for (int i = 0; i < infix.length(); i++) {
             char c = infix.charAt(i);
 
-            // If the character is an operand, add it to the output
             if (Character.isLetterOrDigit(c)) {
                 postfix.append(c);
-            }
-            // If the character is '(', push it to the stack
-            else if (c == '(') {
+            } else if (c == '(') {
                 stack.push(c);
-            }
-            // If the character is ')', pop and output from the stack until '(' is found
-            else if (c == ')') {
+            } else if (c == ')') {
                 while (!stack.isEmpty() && stack.peek() != '(') {
                     postfix.append(stack.pop());
                 }
-                stack.pop(); // pop '('
-            }
-            // If the character is an operator
-            else if (isOperator(c)) {
+                stack.pop();
+            } else if (isOperator(c)) {
                 while (!stack.isEmpty() && precedence(c) <= precedence(stack.peek())) {
                     postfix.append(stack.pop());
                 }
@@ -52,7 +47,6 @@ public class ExpressionConverter {
             }
         }
 
-        // Pop all the remaining operators in the stack
         while (!stack.isEmpty()) {
             postfix.append(stack.pop());
         }
@@ -60,13 +54,10 @@ public class ExpressionConverter {
         return postfix.toString();
     }
 
-    // Infix to Prefix conversion
     public static String infixToPrefix(String infix) {
-        // Reverse the infix expression
         StringBuilder reversedInfix = new StringBuilder(infix).reverse();
-
-        // Replace '(' with ')' and vice versa
         StringBuilder reversedInfixModified = new StringBuilder();
+
         for (char c : reversedInfix.toString().toCharArray()) {
             if (c == '(') {
                 reversedInfixModified.append(')');
@@ -77,30 +68,35 @@ public class ExpressionConverter {
             }
         }
 
-        // Convert modified infix to postfix
         String postfix = infixToPostfix(reversedInfixModified.toString());
 
-        // Reverse the postfix to get the prefix
         return new StringBuilder(postfix).reverse().toString();
     }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter infix expression: ");
-        String infix = scanner.nextLine().trim();
+        while (true) {
+            System.out.print("Enter infix expression (or type 'exit' to quit): ");
+            String infix = scanner.nextLine().trim();
 
-        // Check if the user input is empty or contains invalid characters
-        if (infix.isEmpty()) {
-            System.out.println("Infix expression cannot be empty.");
-            return;
+            if (infix.equalsIgnoreCase("exit")) {
+                System.out.println("Exiting...");
+                break;
+            }
+
+            if (infix.isEmpty()) {
+                System.out.println("Infix expression cannot be empty.");
+                continue;
+            }
+
+            String prefix = infixToPrefix(infix);
+            String postfix = infixToPostfix(infix);
+
+            System.out.println("Prefix Expression: " + prefix);
+            System.out.println("Postfix Expression: " + postfix);
         }
 
-        // Convert the infix expression to postfix and prefix
-        String postfix = infixToPostfix(infix);
-        String prefix = infixToPrefix(infix);
-
-        System.out.println("Postfix Expression: " + postfix);
-        System.out.println("Prefix Expression: " + prefix);
+        scanner.close();
     }
 }
